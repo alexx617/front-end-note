@@ -1,6 +1,9 @@
 http://blog.csdn.net/itkingone/article/details/70331783
 
+http://www.jianshu.com/p/9c7815024bf5
+
 API:https://doc.webpack-china.org/configuration/
+
 API:https://doc.webpack-china.org/guides/production/#js-
 
 命令行:
@@ -9,8 +12,120 @@ webpack //直接运行这个命令会去找webpack.config.js
 
 webpack --config XXX.js   //使用另一份配置文件(不去找webpack.config.js)
 
+插件(http://www.jianshu.com/p/fd55b15bd914):
+```
+var HtmlWebpackPlugin = require('html-webpack-plugin')//默认将生成的index.html打包在output的文件夹
+new HtmlWebpackPlugin({
+  inject: true,//将打包好的js文件注入在该html的body底部，保证了script的加载顺序。
+  template: './index.html',
+  filename: 'index.html'
+}),
+```
 
 ```
+var CopyWebpackPlugin = require('copy-webpack-plugin')//将打包好的静态文件夹拷贝到打包目录dist下。
+new CopyWebpackPlugin([
+  {from: 'static', to:'static'}
+]),
+```
+
+```
+var CleanWebpackPlugin = require('clean-webpack-plugin')//打包前清除dist目录,放在最后
+
+new CleanWebpackPlugin(['dist'])
+
+```
+
+CommonsChunkPlugin代码分割(Code Splitting):https://zhuanlan.zhihu.com/p/26710831
+
+DllPlugin:
+
+DllPlugin 可以把我们需要把**==不常变动的第三方库==**都提取出来打包成一个 js 文件和一个 json 文件，这个 json 文件中会映射每个打包的模块地址和 id，DllReferencePlugin 通过读取这个json文件来使用打包的这些模块。
+
+(问题:当把太多的第三方依赖都打包到vendor.dll.js中去，该文件太大也会影响首屏加载时间。所以要权衡利弊，可以异步加载的插件就没有必要打包进来,不要一味的把所有都打包到这里面)
+
+
+使用:
+
+```
+在build文件夹下新建文件webpack.dll.conf.js:
+
+const webpack = require('webpack');
+const path = require('path');
+
+var vendors = [
+    'vue/dist/vue.esm.js',
+    'vue-router',
+    'vuex',
+    'iview',
+    'axios',
+    'element-ui/lib/dialog',
+    'element-ui/lib/button',
+    'element-ui/lib/table',
+    'element-ui/lib/table-column',
+    'echarts/lib/echarts',
+    'echarts/lib/chart/bar',
+    'echarts/lib/chart/line',
+    'echarts/lib/chart/pie',
+    'echarts/lib/component/tooltip',
+    'echarts/lib/component/title',
+    'echarts/lib/component/legend',
+    'echarts/lib/component/toolbox',
+    'echarts/theme/macarons',
+    'moment',
+]
+
+module.exports = {
+    entry: {
+        vendor: vendors
+    },
+    output: {
+        path: path.join(__dirname, '../static/js'), // 打包后文件输出的位置
+        filename: '[name].dll.js',//文件名称
+        library: '[name]_library'// vendor.dll.js中暴露出的全局变量名,在全局作用域可用
+        // 主要是给DllPlugin中的name使用，
+        // 故这里需要和webpack.DllPlugin中的`name: '[name]_library',`保持一致。
+    },
+    plugins: [
+        new webpack.DllPlugin({//生成映射每个打包的模块地址和 id的json文件,用来让 DLLReferencePlugin 映射到相关的依赖上。
+            path: path.join(__dirname, '.', '[name]-manifest.json'),//文件输出的位置
+            name: '[name]_library',//暴露出的 DLL 的函数名
+            context: __dirname//文件中请求的上下文
+        }),
+        // 压缩打包的文件
+        new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                warnings: false
+            }
+        })
+    ]
+}
+
+在webpack.prod.conf.js的plugins里:
+
+new webpack.DllReferencePlugin({
+  context: path.resolve(__dirname,'..'),
+  manifest: require('./vendor-manifest.json')
+}),
+
+在package.json中构建命令:
+"scripts": {
+    "dll": "webpack --config build/webpack.dll.conf.js"
+}
+
+在index.html引入vendor.dll.js
+
+<body>
+    <div id="app"></div>
+    <script src="./static/js/vendor.dll.js"></script>
+</body>
+
+```
+
+
+```
+自建webpack:
+
 //创建package.json
 npm init -y
 
@@ -41,16 +156,17 @@ module.exports = {
     }
 }
 
-```
 
-
-```
 启动指令
 "scripts": {
-    "dev": "node build/dev-server.js",
-    "build": "node build/build.js",// 打包
-    "lint": "eslint --ext .js,.vue src"
-  },
+"dev": "node build/dev-server.js",
+"build": "node build/build.js",// 打包
+"lint": "eslint --ext .js,.vue src"
+},
+
+```
+
+```
 webpack.base.conf.js
 webpack基本配置
 var path = require('path')
@@ -137,9 +253,6 @@ module.exports = {
   }
 }
 
-
-
---------------------------------------------------------------------------------
 webpack.dev.conf.js
 var config = require('../config')
 var webpack = require('webpack')
