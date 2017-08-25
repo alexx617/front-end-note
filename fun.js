@@ -158,3 +158,8 @@
 // var person2 = Object.create(person1);
 // console.log(person1);
 // console.log(person2);
+
+async function f() {
+    return await 1
+};
+f().then(res => console.log(res));
