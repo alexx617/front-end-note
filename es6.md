@@ -543,6 +543,34 @@ console.log(arr2);//2,4,6,8,10
 ```
 
 ---
+JSON代码转换成数组:
+```
+let  json = {
+    '0': 'jspang',
+    '1': '技术胖',
+    '2': '大胖逼逼叨',
+    length:3
+}
+ 
+let arr=Array.from(json);
+console.log(arr)
+```
+
+文本,变量,数字,字符串转换为数组:
+```
+let arr =Array.of(3,4,5,6);
+console.log(arr);
+```
+
+将数组进行填充,接收三个参数，第一个参数是填充的变量，第二个是开始填充的位置，第三个是填充到的位置。
+
+```
+let arr=[0,1,2,3,4,5,6,7,8,9];
+arr.fill('jspang',2,5);
+console.log(arr);
+```
+
+---
 
 //扩展运算符
 用于获取函数的多余参数
@@ -699,6 +727,36 @@ console.log(0 in arr1);  // true
 
 注意：这里的0指的是数组下标,判断是否有0这个下标。
 
+**in 与 hasOwnProperty() 的区别**
+
+in 能访问到对象实例的属性和原型对象的属性，而hasOwnProperty()只能访问对象实例本身
+
+```
+function Person() {   // 构造函数
+}
+Person.prototype.name = "zao";
+Person.prototype.age = "24";
+Person.prototype.job = "Software Engineer";
+Person.sayName = function() {
+    alert(this.name);
+};
+
+var person1 = new Person();
+
+console.log(person1.hasOwnProperty('name'));     // false
+console.log("name" in person1);     // true
+
+person1.name = "an"
+console.log(person1.name);    // an
+console.log(person1.hasOwnProperty('name'));     // true
+console.log("name" in person1);      // true
+
+delete person1.name;
+console.log(person1.name);      //  "zao"
+console.log(person.hasOwnProperty('name'));      // false
+console.log("name" in person1);      // true
+```
+
 
 ---
 
@@ -712,4 +770,37 @@ varobj={
     [key]:'web'
 }
 console.log(obj.skill);
+```
+
+---
+
+丢弃小数部分,保留整数部分:parseInt()
+
+向上取整,有小数就整数部分加1:Math.ceil()
+
+四舍五入:Math.round()
+
+向下取整:Math.floor()
+
+数字:
+```
+数字验证Number.isFinite( xx )
+可以使用Number.isFinite( )来进行数字验证，只要是数字，不论是浮点型还是整形都会返回true，其他时候会返回false。
+leta=11/4;
+console.log(Number.isFinite(a));//true
+console.log(Number.isFinite('jspang'));//false
+console.log(Number.isFinite(NaN));//false
+console.log(Number.isFinite(undefined));//false
+```
+```
+NaN验证
+NaN是特殊的非数字，可以使用Number.isNaN()来进行验证。下边的代码控制台返回了true。
+console.log(Number.isNaN(NaN));
+判断是否为整数Number.isInteger(xx)
+leta=123.1;
+console.log(Number.isInteger(a));//false
+整数转换Number.parseInt(xxx)和浮点型转换Number.parseFloat(xxx)
+leta='9.18';
+console.log(Number.parseInt(a));//9
+console.log(Number.parseFloat(a));//9.18
 ```
